@@ -82,6 +82,7 @@
     icon-picker.enable = true;
     surround.enable = true;
     diffview-nvim.enable = true;
+    yazi-nvim.enable = true;
     motion = {
       hop.enable = true;
       leap.enable = true;
