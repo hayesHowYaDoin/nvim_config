@@ -1,11 +1,21 @@
-{pkgs, ...}: {
+{pkgs, themeConfig ? { enable = true; name = "catppuccin"; style = "mocha"; }, ...}: let
+  # nvf built-in themes (from supported-themes.nix)
+  nvfSupportedThemes = [
+    "base16" "mini-base16" "onedark" "tokyonight" "dracula" "catppuccin"
+    "oxocarbon" "gruvbox" "rose-pine" "nord" "github" "solarized"
+    "solarized-osaka" "everforest"
+  ];
+
+  # Check if the requested theme is built-in to nvf
+  isNvfTheme = builtins.elem (themeConfig.name or "") nvfSupportedThemes;
+
+  # Use nvf's theme system only for supported themes
+  # For custom themes like gruvbox-material, disable it and handle in extraPlugins
+  nvfThemeConfig = if isNvfTheme then themeConfig else { enable = false; };
+in {
   globals.mapleader = " ";
 
-  theme = {
-    enable = true;
-    name = "catppuccin";
-    style = "mocha";
-  };
+  theme = nvfThemeConfig;
 
   lineNumberMode = "relative";
   preventJunkFiles = true;
@@ -48,7 +58,10 @@
   statusline = {
     lualine = {
       enable = true;
-      theme = "catppuccin";
+      # Map custom themes to lualine theme names
+      theme =
+        if (themeConfig.name or "") == "gruvbox-material" then "gruvbox-material"
+        else themeConfig.name or "catppuccin";
     };
   };
 
@@ -93,6 +106,17 @@
     vim-be-good = {
       package = pkgs.vimPlugins.vim-be-good;
       setup = "";
+    };
+    gruvbox-material = {
+      package = pkgs.vimPlugins.gruvbox-material;
+      setup = ''
+        -- Configure gruvbox-material before setting colorscheme
+        vim.g.gruvbox_material_background = '${themeConfig.style or "medium"}'
+        vim.g.gruvbox_material_better_performance = 1
+
+        -- Only set colorscheme if gruvbox-material is the selected theme
+        ${if themeConfig.name or "" == "gruvbox-material" then "vim.cmd('colorscheme gruvbox-material')" else ""}
+      '';
     };
   };
 
