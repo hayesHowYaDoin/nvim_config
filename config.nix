@@ -1,4 +1,4 @@
-{ pkgs, themeConfig, ... }:
+{ pkgs, themeConfig }:
 let
   # Generate Lua config for nix-colors base16 theme
   nixColorsLua = if themeConfig.useNixColors then
