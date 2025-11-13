@@ -7,49 +7,26 @@
   };
 
   outputs = {
-    self,
     nixpkgs,
     nvf,
     ...
   }: let
-    # Import our library functions
-    libFunctions = import ./lib.nix { inherit nvf; };
-
-    # Supported systems
-    systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
-
-    # Helper to run a function for each system
-    forAllSystems = nixpkgs.lib.genAttrs systems;
-
-    # Create overridable Neovim package for a given system
-    mkDefaultPackage = system: let
+    mkNeovim = system: let
       pkgs = nixpkgs.legacyPackages.${system};
-
-      # Create base Neovim with default theme (catppuccin-mocha)
-      baseNeovim = libFunctions.mkNeovim {
-        inherit pkgs;
-        # Defaults are set in lib.nix
-      };
-    in
-      # Make it overridable so users can do .override { theme = "gruvbox"; }
-      pkgs.lib.makeOverridable
-        ({ theme ? "catppuccin"
-         , style ? "mocha"
-         , nixColorsScheme ? null
-         }: (libFunctions.mkNeovim {
-             inherit pkgs theme style nixColorsScheme;
-           }).neovim)
-        { }; # Default arguments (use defaults from mkNeovim)
-
-  in {
-    # Expose library functions for advanced usage
-    lib = {
-      inherit (libFunctions) mkNeovim mkNeovimWithColors;
+      vimConfig = import ./config.nix { inherit pkgs; };
+    in nvf.lib.neovimConfiguration {
+      inherit pkgs;
+      modules = [
+        {
+          config.vim = vimConfig;
+        }
+      ];
     };
-
-    # Provide default packages for each system
-    packages = forAllSystems (system: {
-      default = mkDefaultPackage system;
-    });
+  in {
+    packages = {
+      x86_64-linux.default = (mkNeovim "x86_64-linux").neovim;
+      aarch64-linux.default = (mkNeovim "aarch64-linux").neovim;
+      aarch64-darwin.default = (mkNeovim "aarch64-darwin").neovim;
+    };
   };
 }

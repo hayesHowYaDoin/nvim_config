@@ -1,28 +1,10 @@
-{ pkgs, themeConfig }:
-let
-  # Generate Lua config for nix-colors base16 theme
-  nixColorsLua = if themeConfig.useNixColors then
-    let
-      colors = themeConfig.nixColorsScheme.palette;
-      # Convert nix-colors base16 palette to vim variables
-      colorLines = builtins.map
-        (name: "vim.g.base16_gui${builtins.substring 4 2 name} = '#${colors.${name}}'")
-        (builtins.attrNames colors);
-    in
-    ''
-      -- Apply nix-colors base16 palette
-      ${builtins.concatStringsSep "\n      " colorLines}
-      vim.cmd('colorscheme base16-${themeConfig.style}')
-    ''
-  else "";
-in
-{
+{pkgs, ...}: {
   globals.mapleader = " ";
 
   theme = {
-    enable = !themeConfig.useNixColors;  # Use nvf themes only when not using nix-colors
-    name = themeConfig.name;
-    style = themeConfig.style;
+    enable = true;
+    name = "catppuccin";
+    style = "mocha";
   };
 
   lineNumberMode = "relative";
@@ -66,7 +48,7 @@ in
   statusline = {
     lualine = {
       enable = true;
-      theme = if themeConfig.useNixColors then "base16" else themeConfig.name;
+      theme = "catppuccin";
     };
   };
 
@@ -112,15 +94,7 @@ in
       package = pkgs.vimPlugins.vim-be-good;
       setup = "";
     };
-  } // (
-    # Add base16-vim plugin when using nix-colors
-    if themeConfig.useNixColors then {
-      base16-vim = {
-        package = pkgs.vimPlugins.base16-vim;
-        setup = nixColorsLua;
-      };
-    } else {}
-  );
+  };
 
   git = {
     enable = true;
