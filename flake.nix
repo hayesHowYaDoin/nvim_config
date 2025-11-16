@@ -37,27 +37,34 @@
     };
 
     # Build neovim with optional theme configuration and colorscheme
-    mkNeovim = system: themeConfig: colorScheme: let
+    mkNeovim = system: themeConfig: colorScheme: transparentBackground: let
       pkgs = nixpkgs.legacyPackages.${system};
       vimConfig = import ./config.nix {
-        inherit pkgs themeConfig;
+        inherit pkgs themeConfig transparentBackground;
       };
       # Generate base16 vim globals from nix-colors if colorscheme is provided
-      base16Globals = if colorScheme != null then
-        pkgs.lib.mapAttrs' (name: value:
-          pkgs.lib.nameValuePair "base16_${name}" "#${value}"
-        ) colorScheme.palette
-      else {};
-    in nvf.lib.neovimConfiguration {
-      inherit pkgs;
-      modules = [
-        {
-          config.vim = vimConfig // {
-            globals = vimConfig.globals // base16Globals;
-          };
-        }
-      ];
-    };
+      base16Globals =
+        if colorScheme != null
+        then
+          pkgs.lib.mapAttrs' (
+            name: value:
+              pkgs.lib.nameValuePair "base16_${name}" "#${value}"
+          )
+          colorScheme.palette
+        else {};
+    in
+      nvf.lib.neovimConfiguration {
+        inherit pkgs;
+        modules = [
+          {
+            config.vim =
+              vimConfig
+              // {
+                globals = vimConfig.globals // base16Globals;
+              };
+          }
+        ];
+      };
 
     # Default theme config (Catppuccin Mocha)
     defaultThemeConfig = {
@@ -67,12 +74,17 @@
     };
   in {
     packages = {
-      x86_64-linux.default = (mkNeovim "x86_64-linux" defaultThemeConfig null).neovim;
-      aarch64-linux.default = (mkNeovim "aarch64-linux" defaultThemeConfig null).neovim;
-      aarch64-darwin.default = (mkNeovim "aarch64-darwin" defaultThemeConfig null).neovim;
+      x86_64-linux.default = (mkNeovim "x86_64-linux" defaultThemeConfig null false).neovim;
+      aarch64-linux.default = (mkNeovim "aarch64-linux" defaultThemeConfig null false).neovim;
+      aarch64-darwin.default = (mkNeovim "aarch64-darwin" defaultThemeConfig null false).neovim;
     };
 
-    homeManagerModules.default = {config, lib, pkgs, ...}: let
+    homeManagerModules.default = {
+      config,
+      lib,
+      pkgs,
+      ...
+    }: let
       cfg = config.programs.nvim_config;
       system = pkgs.system;
     in {
@@ -126,18 +138,24 @@
           '';
           example = lib.literalExpression "config.colorScheme";
         };
+
+        transparentBackground = lib.mkEnableOption "transparent background for Neovim";
       };
 
       config = lib.mkIf cfg.enable {
         home.packages = let
-          themeConfig = if cfg.theme != null
-            then { enable = true; inherit (cfg.theme) name style; }
+          themeConfig =
+            if cfg.theme != null
+            then {
+              enable = true;
+              inherit (cfg.theme) name style;
+            }
             else if cfg.colorScheme != null
-              then nixColorsToThemeConfig cfg.colorScheme
-              else defaultThemeConfig;
+            then nixColorsToThemeConfig cfg.colorScheme
+            else defaultThemeConfig;
           colorScheme = cfg.colorScheme;
         in [
-          (mkNeovim system themeConfig colorScheme).neovim
+          (mkNeovim system themeConfig colorScheme cfg.transparentBackground).neovim
         ];
       };
     };

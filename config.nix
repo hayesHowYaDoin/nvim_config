@@ -1,9 +1,29 @@
-{pkgs, themeConfig ? { enable = true; name = "catppuccin"; style = "mocha"; }, ...}: let
+{
+  pkgs,
+  themeConfig ? {
+    enable = true;
+    name = "catppuccin";
+    style = "mocha";
+  },
+  transparentBackground ? false,
+  ...
+}: let
   # nvf built-in themes (from supported-themes.nix)
   nvfSupportedThemes = [
-    "base16" "mini-base16" "onedark" "tokyonight" "dracula" "catppuccin"
-    "oxocarbon" "gruvbox" "rose-pine" "nord" "github" "solarized"
-    "solarized-osaka" "everforest"
+    "base16"
+    "mini-base16"
+    "onedark"
+    "tokyonight"
+    "dracula"
+    "catppuccin"
+    "oxocarbon"
+    "gruvbox"
+    "rose-pine"
+    "nord"
+    "github"
+    "solarized"
+    "solarized-osaka"
+    "everforest"
   ];
 
   # Check if the requested theme is built-in to nvf
@@ -11,7 +31,10 @@
 
   # Use nvf's theme system only for supported themes
   # For custom themes like gruvbox-material, disable it and handle in extraPlugins
-  nvfThemeConfig = if isNvfTheme then themeConfig else { enable = false; };
+  nvfThemeConfig =
+    if isNvfTheme
+    then themeConfig
+    else {enable = false;};
 in {
   globals.mapleader = " ";
 
@@ -60,7 +83,8 @@ in {
       enable = true;
       # Map custom themes to lualine theme names
       theme =
-        if (themeConfig.name or "") == "gruvbox-material" then "gruvbox-material"
+        if (themeConfig.name or "") == "gruvbox-material"
+        then "gruvbox-material"
         else themeConfig.name or "catppuccin";
     };
   };
@@ -113,12 +137,44 @@ in {
         -- Configure gruvbox-material before setting colorscheme
         vim.g.gruvbox_material_background = '${themeConfig.style or "medium"}'
         vim.g.gruvbox_material_better_performance = 1
+        ${
+          if transparentBackground
+          then "vim.g.gruvbox_material_transparent_background = 1"
+          else ""
+        }
 
         -- Only set colorscheme if gruvbox-material is the selected theme
-        ${if themeConfig.name or "" == "gruvbox-material" then "vim.cmd('colorscheme gruvbox-material')" else ""}
+        ${
+          if themeConfig.name or "" == "gruvbox-material"
+          then "vim.cmd('colorscheme gruvbox-material')"
+          else ""
+        }
+      '';
+    };
+    transparent-background = {
+      package = pkgs.vimPlugins.base16-nvim;
+      setup = ''
+        -- Apply transparent background to all themes if enabled
+        ${
+          if transparentBackground
+          then ''
+            -- Override background color to be transparent
+            vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+            vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+            vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
+            vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "none" })
+            vim.api.nvim_set_hl(0, "LineNr", { bg = "none" })
+            vim.api.nvim_set_hl(0, "SignColumn", { bg = "none" })
+            vim.api.nvim_set_hl(0, "CursorLineNr", { bg = "none" })
+          ''
+          else ""
+        }
       '';
     };
   };
+
+  # Enable true color support for transparency
+  options.termguicolors = true;
 
   git = {
     enable = true;
