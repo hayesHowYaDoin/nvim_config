@@ -40,7 +40,7 @@ in {
 
   theme = nvfThemeConfig;
 
-  lineNumberMode = "relative";
+  lineNumberMode = "relNumber";
   preventJunkFiles = true;
   options.wrap = true;
   options.scrolloff = 8;
@@ -113,6 +113,8 @@ in {
     illuminate.enable = true;
   };
 
+  dashboard.dashboard-nvim.enable = true;
+
   utility = {
     ccc.enable = true;
     vim-wakatime.enable = false;
@@ -127,6 +129,58 @@ in {
   };
 
   extraPlugins = {
+    dashboard-nvim-config = {
+      package = pkgs.vimPlugins.dashboard-nvim;
+      setup = ''
+        require('dashboard').setup({
+          theme = 'doom',
+          config = {
+            vertical_center = true,
+            header = {
+              "",
+              "███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗",
+              "████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║",
+              "██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║",
+              "██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║",
+              "██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║",
+              "╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝",
+              "",
+            },
+            center = {
+              {
+                icon = ' ',
+                desc = 'Find Files',
+                action = 'Telescope find_files',
+                key = 'f',
+                keymap = ' ff',
+              },
+              {
+                icon = ' ',
+                desc = 'Recent Files',
+                action = 'Telescope oldfiles',
+                key = 'r',
+                keymap = ' fr',
+              },
+              {
+                icon = ' ',
+                desc = 'Live Grep',
+                action = 'Telescope live_grep',
+                key = 'g',
+                keymap = ' fg',
+              },
+              {
+                icon = ' ',
+                desc = 'Commands',
+                action = 'Telescope commands',
+                key = 'c',
+                keymap = ' fc',
+              },
+            },
+            footer = {},
+          },
+        })
+      '';
+    };
     vim-be-good = {
       package = pkgs.vimPlugins.vim-be-good;
       setup = "";
@@ -188,6 +242,7 @@ in {
       "<leader>fg" = {action = "<cmd>Telescope live_grep<CR>";};
       "<leader>fb" = {action = "<cmd>Telescope buffers<CR>";};
       "<leader>fh" = {action = "<cmd>Telescope help_tags<CR>";};
+      "<leader>fc" = {action = "<cmd>Telescope commands<CR>";};
       "<leader>ft" = {action = "<cmd>NvimTreeToggle<CR>";};
       "<leader>e" = {action = "<cmd>NvimTreeFocus<CR>";};
       "<C-\\>" = {action = "<cmd>ToggleTerm<CR>";};
