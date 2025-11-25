@@ -37,10 +37,10 @@
     };
 
     # Build neovim with optional theme configuration and colorscheme
-    mkNeovim = system: themeConfig: colorScheme: transparentBackground: let
+    mkNeovim = system: themeConfig: colorScheme: transparentBackground: obsidianConfig: let
       pkgs = nixpkgs.legacyPackages.${system};
       vimConfig = import ./config.nix {
-        inherit pkgs themeConfig transparentBackground;
+        inherit pkgs themeConfig transparentBackground obsidianConfig;
       };
       # Generate base16 vim globals from nix-colors if colorscheme is provided
       base16Globals =
@@ -72,11 +72,14 @@
       name = "catppuccin";
       style = "mocha";
     };
+
+    # Default obsidian config (disabled)
+    defaultObsidianConfig = null;
   in {
     packages = {
-      x86_64-linux.default = (mkNeovim "x86_64-linux" defaultThemeConfig null false).neovim;
-      aarch64-linux.default = (mkNeovim "aarch64-linux" defaultThemeConfig null false).neovim;
-      aarch64-darwin.default = (mkNeovim "aarch64-darwin" defaultThemeConfig null false).neovim;
+      x86_64-linux.default = (mkNeovim "x86_64-linux" defaultThemeConfig null false defaultObsidianConfig).neovim;
+      aarch64-linux.default = (mkNeovim "aarch64-linux" defaultThemeConfig null false defaultObsidianConfig).neovim;
+      aarch64-darwin.default = (mkNeovim "aarch64-darwin" defaultThemeConfig null false defaultObsidianConfig).neovim;
     };
 
     homeManagerModules.default = {
@@ -140,6 +143,35 @@
         };
 
         transparentBackground = lib.mkEnableOption "transparent background for Neovim";
+
+        obsidian = lib.mkOption {
+          type = lib.types.nullOr (lib.types.submodule {
+            options = {
+              vaultPath = lib.mkOption {
+                type = lib.types.str;
+                default = "~/notes";
+                description = "Path to your Obsidian vault";
+                example = "~/Documents/obsidian-vault";
+              };
+
+              dailyNotesFolder = lib.mkOption {
+                type = lib.types.str;
+                default = "daily";
+                description = "Folder for daily notes within your vault";
+                example = "journal/daily";
+              };
+
+              templatesFolder = lib.mkOption {
+                type = lib.types.str;
+                default = "templates";
+                description = "Folder for note templates within your vault";
+                example = "templates";
+              };
+            };
+          });
+          default = null;
+          description = "Obsidian.nvim configuration. Set to null to disable, or provide configuration to enable.";
+        };
       };
 
       config = lib.mkIf cfg.enable {
@@ -154,8 +186,12 @@
             then nixColorsToThemeConfig cfg.colorScheme
             else defaultThemeConfig;
           colorScheme = cfg.colorScheme;
+          obsidianConfig =
+            if cfg.obsidian != null
+            then cfg.obsidian
+            else null;
         in [
-          (mkNeovim system themeConfig colorScheme cfg.transparentBackground).neovim
+          (mkNeovim system themeConfig colorScheme cfg.transparentBackground obsidianConfig).neovim
         ];
       };
     };
