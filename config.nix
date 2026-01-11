@@ -77,6 +77,7 @@ in {
     lua.enable = true;
     rust.enable = true;
     clang.enable = true;
+    wgsl.enable = true;
   };
 
   statusline = {
