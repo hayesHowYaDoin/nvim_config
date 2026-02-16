@@ -74,13 +74,42 @@ in {
     enableTreesitter = true;
     enableExtraDiagnostics = true;
 
-    nix.enable = true;
-    python.enable = true;
-    lua.enable = true;
-    rust.enable = true;
-    clang.enable = true;
-    wgsl.enable = true;
-    gleam.enable = true;
+    nix = {
+      enable = true;
+      extraDiagnostics.enable = true;
+      lsp.enable = true;
+    };
+    python = {
+      enable = true;
+      lsp.enable = true;
+      dap.enable = true;
+    };
+    lua = {
+      enable = true;
+      lsp.enable = true;
+    };
+    rust = {
+      enable = true;
+      lsp.enable = true;
+      dap.enable = true;
+    };
+    clang = {
+      enable = true;
+      lsp.enable = true;
+      dap.enable = true;
+    };
+    wgsl = {
+      enable = true;
+      lsp.enable = true;
+    };
+    gleam = {
+      enable = true;
+      lsp.enable = true;
+    };
+    nu = {
+      enable = true;
+      lsp.enable = true;
+    };
   };
 
   statusline = {
@@ -372,6 +401,15 @@ in {
       "<leader>ca" = {action = "<cmd>lua vim.lsp.buf.code_action()<CR>";};
       "<leader>th" = {action = "<cmd>lua vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())<CR>";};
       "<leader>fm" = {action = "<cmd>lua vim.lsp.buf.format()<CR>";};
+
+      # DAP (Debugger)
+      "<leader>db" = {action = "<cmd>DapToggleBreakpoint<CR>";};
+      "<leader>dc" = {action = "<cmd>DapContinue<CR>";};
+      "<leader>do" = {action = "<cmd>DapStepOver<CR>";};
+      "<leader>di" = {action = "<cmd>DapStepInto<CR>";};
+      "<leader>dO" = {action = "<cmd>DapStepOut<CR>";};
+      "<leader>dt" = {action = "<cmd>DapTerminate<CR>";};
+      "<leader>du" = {action = "<cmd>lua require('dapui').toggle()<CR>";};
     };
     terminal = {
       "<C-\\>" = {action = "<cmd>ToggleTerm<CR>";};
