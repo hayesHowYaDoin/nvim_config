@@ -14,6 +14,7 @@
     "base16"
     "mini-base16"
     "onedark"
+    "gruber-darker"
     "tokyonight"
     "dracula"
     "catppuccin"
@@ -25,6 +26,7 @@
     "solarized"
     "solarized-osaka"
     "everforest"
+    "mellow"
   ];
 
   # Check if the requested theme is built-in to nvf
@@ -54,7 +56,7 @@ in {
 
   treesitter = {
     enable = true;
-    fold = true;
+    fold = false;
     highlight.enable = true;
     indent.enable = true;
   };
@@ -115,11 +117,12 @@ in {
   statusline = {
     lualine = {
       enable = true;
-      # Map custom themes to lualine theme names
+      # Use "auto" to inherit from the active colorscheme
+      # For gruvbox-material, explicitly set since it's a custom plugin
       theme =
         if (themeConfig.name or "") == "gruvbox-material"
         then "gruvbox-material"
-        else themeConfig.name or "catppuccin";
+        else "auto";
     };
   };
 
@@ -250,10 +253,6 @@ in {
           },
         })
       '';
-    };
-    vim-be-good = {
-      package = pkgs.vimPlugins.vim-be-good;
-      setup = "";
     };
     gruvbox-material = {
       package = pkgs.vimPlugins.gruvbox-material;
